@@ -1,2 +1,2 @@
 # hdb_predictions
-Predict HDB prices. Streamlit app as user interface. Users make selections and predictions are generated thereafter.
+Want to get a ballpark transaction price for a resale HDB in Singapore? Click and drag inputs to your heart's content, then click on "Predict!"
