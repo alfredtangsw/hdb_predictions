@@ -1,0 +1,6 @@
+category_encoders==2.6.1
+numpy==1.25.2
+pandas==2.0.3
+scipy==1.11.1
+streamlit==1.25.0
+xgboost==1.7.6
