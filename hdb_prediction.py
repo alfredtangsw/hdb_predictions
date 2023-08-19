@@ -10,21 +10,23 @@ import scipy.stats as stats
 
 st.header('HDB Price Prediction Application')
 st.write('by Alfred Tang, Aug 2023')
-st.write('v0.1 -- Demo version. Everything is a WIP!')
+st.warning('v0.2 -- Demo version. Everything is a WIP!')
 
 wdir = './'
 
+df = pd.read_csv(wdir + 'files/full_df_clean.csv')
+
 # should gather this section into 1 config.py...
-with open(wdir + 'hdb_model.pkl', 'rb') as f:
+with open(wdir + 'files/hdb_model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-with open(wdir + 'cat_encoder.pkl', 'rb') as f:
+with open(wdir + 'files/cat_encoder.pkl', 'rb') as f:
     enc = pickle.load(f)
 
-with open(wdir + 'flat_type_ranks.json', 'rb') as f:
+with open(wdir + 'files/flat_type_ranks.json', 'rb') as f:
     flat_type_ranks = json.load(f)
 
-with open(wdir + 'selection_params.json', 'rb') as f:
+with open(wdir + 'files/selection_params.json', 'rb') as f:
     selection_params = json.load(f)
 
 # # Sanity checks for make sure all items are loaded properly    
@@ -34,28 +36,57 @@ with open(wdir + 'selection_params.json', 'rb') as f:
 
 town = st.selectbox('Town', selection_params['town'])
 
-flat_model = st.selectbox('Flat Model', selection_params['flat_model'])
-
+def get_flat_types(df, flat_type_ranks):
+    town_flat_type_nums = list(df[df['town'] == town]['flat_type_num'].unique())
+    town_flat_types = [key for key, val in flat_type_ranks.items() if val in town_flat_type_nums]
+    return town_flat_types
+    
 flat_type = st.selectbox('Type of Flat',
-                         flat_type_ranks.keys()
+                         get_flat_types(df, flat_type_ranks)
                          )
 
 flat_type_num = flat_type_ranks[flat_type]
 
-floor_area = st.slider('Floor Area (square metres)', 
-                        int(selection_params['floor_area_sqm'][0]), 
-                        int(selection_params['floor_area_sqm'][1])
-                        )
+# def get_flat_models(df, town, flat_type):
+    
 
-storey = st.slider('Storey', 
-                   int(selection_params['storey'][0]), 
-                   int(selection_params['storey'][1])
-                   )
+flat_model = st.selectbox('Flat Model', 
+                          list(df[(df['town'] == town) & (df['flat_type_num'] == flat_type_num)]['flat_model'].unique())
+                          )
 
-remaining_lease_months = st.slider('Remaining Lease (Months)', 
-                                   int(selection_params['remaining_lease_months'][0]), 
-                                   int(selection_params['remaining_lease_months'][1])
-                                   )
+
+
+# floor_area = st.slider('Floor Area (square metres)', 
+#                         int(selection_params['floor_area_sqm'][0]), 
+#                         int(selection_params['floor_area_sqm'][1])
+#                         )
+
+floor_area = st.number_input('Floor Area (square metres)', 
+                             int(selection_params['floor_area_sqm'][0]), 
+                             int(selection_params['floor_area_sqm'][1])
+                             )
+
+# storey = st.slider('Storey', 
+#                     int(selection_params['storey'][0]), 
+#                     int(selection_params['storey'][1])
+#                     )
+
+storey = st.number_input('Storey', 
+                         int(selection_params['storey'][0]), 
+                         int(selection_params['storey'][1])
+                         )
+
+# remaining_lease_years = st.slider('Remaining Lease (Years)', 
+#                                   float(selection_params['remaining_lease_months'][0]/12.0), 
+#                                   float(selection_params['remaining_lease_months'][1])/12.0
+#                                    )
+
+remaining_lease_years = st.number_input('Remaining Lease (Years)', 
+                                  float(selection_params['remaining_lease_months'][0]/12.0), 
+                                  float(selection_params['remaining_lease_months'][1])/12.0
+                                  )
+
+remaining_lease_months = remaining_lease_years * 12.0
 
 # encode features into a format compatible with the model
 categoricals = pd.DataFrame({'town':[town],
